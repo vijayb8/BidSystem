@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	mem memory.TxnIn
+	mem        memory.TxnIn
 	httpClient = &http.Client{
 		Timeout: 10 * time.Second,
 	}
@@ -39,21 +39,21 @@ func BenchmarkCreateBid(t *testing.B) {
 	}
 	data, _ := jsoniter.MarshalToString(item)
 	jsonStr := []byte(data)
-	resp ,err := httpClient.Post("http://127.0.0.1:8181/items/item", "application/json", bytes.NewBuffer(jsonStr))
+	resp, err := httpClient.Post("http://127.0.0.1:8181/items/item", "application/json", bytes.NewBuffer(jsonStr))
 	if err != nil {
 		t.Fatal(err)
 	}
 	da, _ := ioutil.ReadAll(resp.Body)
 	itemId := jsoniter.Get(da, "data").ToString()
 
-	for i:=0; i < 100; i++ {
+	for i := 0; i < 100; i++ {
 		user := structs.User{
-			Name: "vijay"+strconv.Itoa(i),
+			Name:  "vijay" + strconv.Itoa(i),
 			Email: "test@email.com",
 		}
 		data, _ := jsoniter.MarshalToString(user)
 		var jsonStr = []byte(data)
-		resp ,err := httpClient.Post("http://127.0.0.1:8181/users/user", "application/json", bytes.NewBuffer(jsonStr))
+		resp, err := httpClient.Post("http://127.0.0.1:8181/users/user", "application/json", bytes.NewBuffer(jsonStr))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -63,11 +63,11 @@ func BenchmarkCreateBid(t *testing.B) {
 		bid := structs.Bid{
 			UserId:    userId,
 			ItemId:    itemId,
-			BidAmount: float32(20+i),
+			BidAmount: float32(20 + i),
 		}
 		data, _ = jsoniter.MarshalToString(bid)
 		jsonStr = []byte(data)
-		resp ,err = httpClient.Post("http://127.0.0.1:8181/bids/bid", "application/json", bytes.NewBuffer(jsonStr))
+		resp, err = httpClient.Post("http://127.0.0.1:8181/bids/bid", "application/json", bytes.NewBuffer(jsonStr))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -78,7 +78,7 @@ func BenchmarkCreateBid(t *testing.B) {
 		}
 
 		//get items by UserId
-		resp, err = httpClient.Get("http://127.0.0.1:8181/users/"+userId+"/bids")
+		resp, err = httpClient.Get("http://127.0.0.1:8181/users/" + userId + "/bids")
 		if err != nil {
 			log.Fatal("cannot get bids")
 		}
@@ -90,12 +90,13 @@ func BenchmarkCreateBid(t *testing.B) {
 	}
 	//get max bid by itemId
 	//get bids by userId
-	resp, err = httpClient.Get("http://127.0.0.1:8181/items/"+itemId+"/bids")
+	resp, err = httpClient.Get("http://127.0.0.1:8181/items/" + itemId + "/bids")
 	if err != nil {
 		log.Fatal("cannot get bids")
 	}
 	da, _ = ioutil.ReadAll(resp.Body)
 	sz := jsoniter.Get(da, "data").Size()
-	if sz == 0 {log.Fatal("No data to read")
+	if sz == 0 {
+		log.Fatal("No data to read")
 	}
 }

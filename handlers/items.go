@@ -28,20 +28,6 @@ func GetItems(txn memory.TxnIn) gin.HandlerFunc {
 	}
 }
 
-func GetItemsByUserId(txn memory.TxnIn) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		userId := c.Param(":itemId")
-		it, err := txn.Get(itemTable, "userId", &userId)
-		if err != nil {
-			responses.ResponseWithError(c, http.StatusInternalServerError, fmt.Errorf("cannot get items"))
-			return
-		}
-		responses.ResponseWithData(c, http.StatusOK, getItems(it))
-		return
-	}
-}
-
-
 func GetItemById(txn memory.TxnIn) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		itemId := c.Param("itemId")
