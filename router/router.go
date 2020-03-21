@@ -17,9 +17,10 @@ func Init(txn memory.TxnIn) *gin.Engine {
 
 	itemGroup := r.Group("items")
 	itemGroup.GET("/", handlers.GetItems(txn))
+	itemGroup.GET("/:itemId", handlers.GetItemById(txn))
 	itemGroup.POST("/item", handlers.CreateItem(txn))
 	itemGroup.GET("/:itemId/bid/max", handlers.GetMaxBidByItemId(txn))
-	itemGroup.GET("/:itemId/bids", handlers.GetItemsByBidId(txn))
+	itemGroup.GET("/:itemId/bids", handlers.GetBidsByItemId(txn))
 
 	bidGroup := r.Group("bids")
 	bidGroup.GET("/", handlers.GetBids(txn))

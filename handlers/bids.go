@@ -54,6 +54,19 @@ func GetBidById(txn memory.TxnIn) gin.HandlerFunc {
 	}
 }
 
+func GetBidsByItemId(txn memory.TxnIn) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		itemId := c.Param("itemId")
+		it, err := txn.Get(bidTable, "itemId", &itemId)
+		if err != nil {
+			responses.ResponseWithError(c, http.StatusInternalServerError, fmt.Errorf("cannot get items for the bid id"))
+			return
+		}
+		responses.ResponseWithData(c, http.StatusOK, getBids(it))
+		return
+	}
+}
+
 func GetMaxBidByItemId(txn memory.TxnIn) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		itemId := c.Param("itemId")

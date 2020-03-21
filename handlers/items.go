@@ -28,15 +28,29 @@ func GetItems(txn memory.TxnIn) gin.HandlerFunc {
 	}
 }
 
-func GetItemsByBidId(txn memory.TxnIn) gin.HandlerFunc {
+func GetItemsByUserId(txn memory.TxnIn) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		bidId := c.Param("bidId")
-		it, err := txn.Get(itemTable, "bid_id", &bidId)
+		userId := c.Param(":itemId")
+		it, err := txn.Get(itemTable, "userId", &userId)
 		if err != nil {
-			responses.ResponseWithError(c, http.StatusInternalServerError, fmt.Errorf("cannot get items for the bid id"))
+			responses.ResponseWithError(c, http.StatusInternalServerError, fmt.Errorf("cannot get items"))
 			return
 		}
 		responses.ResponseWithData(c, http.StatusOK, getItems(it))
+		return
+	}
+}
+
+
+func GetItemById(txn memory.TxnIn) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		itemId := c.Param("itemId")
+		it, err := txn.First(bidTable, "id", &itemId)
+		if err != nil {
+			responses.ResponseWithError(c, http.StatusInternalServerError, fmt.Errorf("cannot get item"))
+			return
+		}
+		responses.ResponseWithData(c, http.StatusOK, it.(structs.Item))
 		return
 	}
 }
