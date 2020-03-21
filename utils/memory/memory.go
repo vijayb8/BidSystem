@@ -31,8 +31,8 @@ func InitDB() *memdb.MemDB {
 				Name: "users",
 				Indexes: map[string]*memdb.IndexSchema{
 					"id": &memdb.IndexSchema{
-						Name: "id",
-						Unique: true,
+						Name:    "id",
+						Unique:  true,
 						Indexer: &memdb.StringFieldIndex{Field: "UserId"},
 					},
 				},
@@ -41,8 +41,8 @@ func InitDB() *memdb.MemDB {
 				Name: "items",
 				Indexes: map[string]*memdb.IndexSchema{
 					"id": &memdb.IndexSchema{
-						Name: "id",
-						Unique: true,
+						Name:    "id",
+						Unique:  true,
 						Indexer: &memdb.StringFieldIndex{Field: "ItemId"},
 					},
 				},
@@ -51,18 +51,18 @@ func InitDB() *memdb.MemDB {
 				Name: "bids",
 				Indexes: map[string]*memdb.IndexSchema{
 					"id": &memdb.IndexSchema{
-						Name: "id",
-						Unique: true,
+						Name:    "id",
+						Unique:  true,
 						Indexer: &memdb.StringFieldIndex{Field: "BidId"},
 					},
 					"userId": &memdb.IndexSchema{
-						Name: "userId",
-						Unique: false,
+						Name:    "userId",
+						Unique:  false,
 						Indexer: &memdb.StringFieldIndex{Field: "UserId"},
 					},
 					"itemId": &memdb.IndexSchema{
-						Name: "itemId",
-						Unique: false,
+						Name:    "itemId",
+						Unique:  false,
 						Indexer: &memdb.StringFieldIndex{Field: "ItemId"},
 					},
 				},

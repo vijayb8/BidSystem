@@ -83,14 +83,14 @@ func CreateBid(txn memory.TxnIn) gin.HandlerFunc {
 		}
 		//Check if the user is present to bid
 		it, err := txn.First("users", "id", &bid.UserId)
-		if err != nil || it == nil{
+		if err != nil || it == nil {
 			responses.ResponseWithError(c, http.StatusInternalServerError, fmt.Errorf("cannot create bid"))
 			return
 		}
 
 		// Check if item is available to bid
 		it, err = txn.First("items", "id", &bid.ItemId)
-		if err != nil || it == nil{
+		if err != nil || it == nil {
 			responses.ResponseWithError(c, http.StatusInternalServerError, fmt.Errorf("cannot create bid"))
 			return
 		}
