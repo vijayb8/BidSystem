@@ -12,12 +12,12 @@ func Init(txn memory.TxnIn) *gin.Engine {
 
 	userGroup := r.Group("users")
 	userGroup.GET("/", handlers.GetUsers(txn))
-	userGroup.POST("/bid", handlers.CreateUser(txn))
+	userGroup.POST("/user", handlers.CreateUser(txn))
 	userGroup.GET("/:userId/bids", handlers.GetBidsByUserId(txn))
 
 	itemGroup := r.Group("items")
 	itemGroup.GET("/", handlers.GetItems(txn))
-	itemGroup.POST("/bid", handlers.CreateItem(txn))
+	itemGroup.POST("/item", handlers.CreateItem(txn))
 	itemGroup.GET("/:itemId/bid/max", handlers.GetMaxBidByItemId(txn))
 	itemGroup.GET("/:itemId/bids", handlers.GetItemsByBidId(txn))
 

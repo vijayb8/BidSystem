@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/google/uuid"
 	"github.com/hashicorp/go-memdb"
 	"net/http"
 )
@@ -17,7 +18,7 @@ var (
 
 func GetItems(txn memory.TxnIn) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		it, err := txn.Get(itemTable, "item_id")
+		it, err := txn.Get(itemTable, "id", nil)
 		if err != nil {
 			responses.ResponseWithError(c, http.StatusInternalServerError, fmt.Errorf("cannot get items"))
 			return
@@ -30,7 +31,7 @@ func GetItems(txn memory.TxnIn) gin.HandlerFunc {
 func GetItemsByBidId(txn memory.TxnIn) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		bidId := c.Param("bidId")
-		it, err := txn.Get(itemTable, "bid_id", bidId)
+		it, err := txn.Get(itemTable, "bid_id", &bidId)
 		if err != nil {
 			responses.ResponseWithError(c, http.StatusInternalServerError, fmt.Errorf("cannot get items for the bid id"))
 			return
@@ -48,12 +49,14 @@ func CreateItem(txn memory.TxnIn) gin.HandlerFunc {
 			responses.ResponseWithError(c, http.StatusBadRequest, fmt.Errorf("bad request"))
 			return
 		}
+		id, _ := uuid.NewRandom()
+		item.ItemId = id.String()
 		err = txn.Write(itemTable, item)
 		if err != nil {
 			responses.ResponseWithError(c, http.StatusInternalServerError, fmt.Errorf("cannot create item"))
 			return
 		}
-		responses.ResponseWithData(c, http.StatusOK, "Item created successfully")
+		responses.ResponseWithData(c, http.StatusOK, item.ItemId)
 		return
 	}
 }
@@ -61,8 +64,8 @@ func CreateItem(txn memory.TxnIn) gin.HandlerFunc {
 func getItems(it memdb.ResultIterator) []structs.Item {
 	var items []structs.Item
 	for obj := it.Next(); obj != nil; obj = it.Next() {
-		item := obj.(*structs.Item)
-		items = append(items, *item)
+		item := obj.(structs.Item)
+		items = append(items, item)
 	}
 	return items
 }

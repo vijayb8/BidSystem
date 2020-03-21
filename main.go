@@ -7,9 +7,8 @@ import (
 )
 
 func main() {
-	txn := memory.NewTxn()
-	defer txn.Abort()
-	err := server.Run(txn)
+	mem := memory.NewMem()
+	err := server.Run(mem)
 	if err != nil {
 		log.Fatal("cannot start the server", err)
 	}

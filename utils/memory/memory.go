@@ -7,36 +7,63 @@ import (
 )
 
 type TxnIn interface {
-	InitDB() *memdb.Txn
 	Write(table string, data interface{}) error
-	Get(table string, index string, args ...interface{}) (memdb.ResultIterator, error)
-	First(table string, index string, args ...interface{}) (interface{}, error)
-	Abort()
+	Get(table string, index string, args *string) (memdb.ResultIterator, error)
+	First(table string, index string, args *string) (interface{}, error)
 }
 
-type txn struct {
-	tx *memdb.Txn
+type mem struct {
+	db *memdb.MemDB
 	mu sync.Mutex
 }
 
-func NewTxn() *txn {
-	return &txn{
-		tx: nil,
+func NewMem() *mem {
+	return &mem{
+		db: InitDB(),
 		mu: sync.Mutex{},
 	}
 }
 
-func (t *txn) InitDB() *memdb.Txn {
-	t.mu.Lock()
-	defer t.mu.Unlock()
+func InitDB() *memdb.MemDB {
 	schema := &memdb.DBSchema{
 		Tables: map[string]*memdb.TableSchema{
-			"user": &memdb.TableSchema{
-				Name: "user",
+			"users": &memdb.TableSchema{
+				Name: "users",
 				Indexes: map[string]*memdb.IndexSchema{
 					"id": &memdb.IndexSchema{
-						Name:   "id",
+						Name: "id",
 						Unique: true,
+						Indexer: &memdb.StringFieldIndex{Field: "UserId"},
+					},
+				},
+			},
+			"items": &memdb.TableSchema{
+				Name: "items",
+				Indexes: map[string]*memdb.IndexSchema{
+					"id": &memdb.IndexSchema{
+						Name: "id",
+						Unique: true,
+						Indexer: &memdb.StringFieldIndex{Field: "ItemId"},
+					},
+				},
+			},
+			"bids": &memdb.TableSchema{
+				Name: "bids",
+				Indexes: map[string]*memdb.IndexSchema{
+					"id": &memdb.IndexSchema{
+						Name: "id",
+						Unique: true,
+						Indexer: &memdb.StringFieldIndex{Field: "BidId"},
+					},
+					"userId": &memdb.IndexSchema{
+						Name: "userId",
+						Unique: false,
+						Indexer: &memdb.StringFieldIndex{Field: "UserId"},
+					},
+					"itemId": &memdb.IndexSchema{
+						Name: "itemId",
+						Unique: false,
+						Indexer: &memdb.StringFieldIndex{Field: "ItemId"},
 					},
 				},
 			},
@@ -48,28 +75,36 @@ func (t *txn) InitDB() *memdb.Txn {
 		log.Fatal(err)
 	}
 
-	return db.Txn(true)
+	return db
 }
 
-func (t *txn) Write(table string, data interface{}) error {
+func (t *mem) Write(table string, data interface{}) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	err := t.tx.Insert(table, data)
+	txn := t.db.Txn(true)
+	defer txn.Abort()
+	err := txn.Insert(table, data)
 	if err != nil {
 		return err
 	}
-	t.tx.Commit()
+	txn.Commit()
 	return nil
 }
 
-func (t *txn) Get(table string, index string, args ...interface{}) (memdb.ResultIterator, error) {
-	return t.tx.Get(table, index, args)
+func (t *mem) Get(table string, index string, args *string) (memdb.ResultIterator, error) {
+	txn := t.db.Txn(false)
+	defer txn.Abort()
+	if args == nil {
+		return txn.Get(table, index)
+	}
+	return txn.Get(table, index, *args)
 }
 
-func (t *txn) First(table string, index string, args ...interface{}) (interface{}, error) {
-	return t.tx.First(table, index, args)
-}
-
-func (t *txn) Abort() {
-	t.tx.Abort()
+func (t *mem) First(table string, index string, args *string) (interface{}, error) {
+	txn := t.db.Txn(false)
+	defer txn.Abort()
+	if args == nil {
+		return txn.First(table, index)
+	}
+	return txn.First(table, index, *args)
 }
